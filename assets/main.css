@@ -1,1 +1,21 @@
 @import "primeicons/primeicons.css";
+
+body{
+  font-family: "Manrope", sans-serif;
+}
+
+html{
+  --background-color: #fbfbfe;
+  --text: #050316;
+  --primary: #369ee7;
+  --secondary: #9ddcfb;
+  --accent: #2821f2;
+}
+
+html.dark-mode{
+  --background-color: #040411;
+  --text: #eae9fc;
+  --primary: #3784e2;
+  --secondary: #89b4ef;
+  --accent: #5670ff;
+}
