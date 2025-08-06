@@ -2,20 +2,22 @@
 
 body{
   font-family: "Manrope", sans-serif;
+  overflow: hidden;
+  margin: 0;
 }
 
 html{
-  --background-color: #fbfbfe;
-  --text: #050316;
-  --primary: #369ee7;
-  --secondary: #9ddcfb;
-  --accent: #2821f2;
+  --background-color: #f4f2ef;
+  --text: #01031c;
+  --primary: #326be6;
+  --secondary: #94b6ef;
+  --accent: #e68c3a;
 }
 
 html.dark-mode{
-  --background-color: #040411;
-  --text: #eae9fc;
-  --primary: #3784e2;
+  --background-color: #131315;
+  --text: #e8dfd5;
+  --primary: #3261d8;
   --secondary: #89b4ef;
-  --accent: #5670ff;
+  --accent: #ff681f;
 }
