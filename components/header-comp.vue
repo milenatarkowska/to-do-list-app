@@ -4,7 +4,12 @@
       <div class="card flex justify-center">
         <Drawer v-model:visible="visible" header="Your to-do lists">
           <div class="lists-container">
-            <div v-for="list in lists" :key="list.id" class="list-item">
+            <div
+              v-for="list in lists"
+              :key="list.id"
+              class="list-item"
+              @click="selectList(list.id)"
+            >
               {{ list.name }}
             </div>
           </div>
@@ -16,7 +21,12 @@
             @click="showDialog"
           />
         </Drawer>
-        <Button icon="pi pi-arrow-right" class="custom-colors" @click="visible = true" />
+        <Button
+          icon="pi pi-arrow-right"
+          class="custom-colors"
+          @click="visible = true"
+          :label="activeListName"
+        />
 
         <Dialog
           v-model:visible="displayDialog"
@@ -51,23 +61,19 @@
         </Dialog>
       </div>
     </div>
-    <div class="right">
-      <Button
-        icon="pi pi-plus"
-        class="custom-colors"
-        aria-label="Add"
-        @click="showDialog"
-      />
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, defineEmits } from "vue";
 import Button from 'primevue/button';
 import Drawer from 'primevue/drawer';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
+
+
+
+const emit = defineEmits(['add-list', 'select-list']);
 
 const visible = ref(false);
 const displayDialog = ref(false);
@@ -79,8 +85,10 @@ onMounted(() => {
   if (savedLists) {
     lists.value = JSON.parse(savedLists);
   } else {
-    lists.value = [{ id: Date.now(), name: 'Main List' }];
+    const defaultList = { id: Date.now(), name: 'Main List' };
+    lists.value = [defaultList];
     saveLists();
+    emit('select-list', defaultList.id);
   }
 });
 
@@ -92,13 +100,20 @@ const showDialog = () => {
 const addNewList = () => {
   if (!newListName.value.trim()) return;
 
-  lists.value.push({
+  const newList = {
     id: Date.now(),
     name: newListName.value.trim()
-  });
+  };
 
+  lists.value.push(newList);
   saveLists();
   displayDialog.value = false;
+  visible.value = false;
+  emit('select-list', newList.id);
+};
+
+const selectList = (listId) => {
+  emit('select-list', listId);
   visible.value = false;
 };
 
