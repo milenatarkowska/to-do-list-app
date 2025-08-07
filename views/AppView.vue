@@ -59,7 +59,6 @@ onMounted(() => {
     lists.value = JSON.parse(savedLists);
     if (lists.value.length > 0) {
       activeListId.value = lists.value[0].id;
-      // Upewnij się, że każda lista ma tablicę tasks
       lists.value.forEach(list => {
         if (!list.tasks) list.tasks = [];
       });
