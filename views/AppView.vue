@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
-    <div class="app-container">
-      <header-comp
-        :active-list-name="activeList?.name || 'Select list'"
-        @add-list="handleAddList"
-        @select-list="setActiveList"
-        @delete-list="handleDeleteList"
-      />
-      <div class="to-do-container" v-if="activeList">
+    <header-comp
+      :active-list-name="activeList?.name || 'Select list'"
+      @add-list="handleAddList"
+      @select-list="setActiveList"
+      @delete-list="handleDeleteList"
+    />
+
+    <div class="to-do-container" v-if="activeList">
       <h2><b>{{ activeList.name }}</b></h2>
       <div class="add-task">
         <InputText
@@ -37,7 +37,6 @@
       </div>
     </div>
   </div>
-  </div>
 </template>
 
 <script setup>
@@ -52,34 +51,44 @@ const activeListId = ref(null);
 const newTask = ref('');
 
 const activeList = computed(() => {
-  return lists.value.find(list => list.id === activeListId.value);
+  return lists.value.find(list => list.id === activeListId.value) || null;
 });
 
 onMounted(() => {
   const savedLists = localStorage.getItem('toDoLists');
   if (savedLists) {
-    lists.value = JSON.parse(savedLists);
-    if (lists.value.length > 0) {
-      activeListId.value = lists.value[0].id;
-      lists.value.forEach(list => {
-        if (!list.tasks) list.tasks = [];
-      });
+    try {
+      lists.value = JSON.parse(savedLists);
+      if (lists.value.length > 0) {
+        activeListId.value = lists.value[0].id;
+        // Ensure each list has tasks array
+        lists.value.forEach(list => {
+          if (!list.tasks) list.tasks = [];
+        });
+      }
+    } catch (e) {
+      console.error('Error parsing saved lists', e);
+      createDefaultList();
     }
+  } else {
+    createDefaultList();
   }
 });
+
+function createDefaultList() {
+  const defaultList = { id: Date.now(), name: 'Main List', tasks: [] };
+  lists.value = [defaultList];
+  activeListId.value = defaultList.id;
+  saveLists();
+}
 
 const setActiveList = (listId) => {
   activeListId.value = listId;
 };
 
-const handleAddList = (listName) => {
-  const newList = {
-    id: Date.now(),
-    name: listName,
-    tasks: []
-  };
-  lists.value.push(newList);
-  activeListId.value = newList.id;
+const handleAddList = (list) => {
+  lists.value.push(list);
+  activeListId.value = list.id;
   saveLists();
 };
 
@@ -102,10 +111,6 @@ const removeTask = (index) => {
   saveLists();
 };
 
-const saveLists = () => {
-  localStorage.setItem('toDoLists', JSON.stringify(lists.value));
-};
-
 const handleDeleteList = (listId) => {
   const index = lists.value.findIndex(list => list.id === listId);
   if (index !== -1) {
@@ -117,22 +122,13 @@ const handleDeleteList = (listId) => {
     }
   }
 };
+
+const saveLists = () => {
+  localStorage.setItem('toDoLists', JSON.stringify(lists.value));
+};
 </script>
 
 <style scoped>
-.custom-colors {
-  background-color: var(--accent) !important;
-  border: none;
-  color: #fbfbfe !important;
-  transition: all 0.3s ease-in-out;
-}
-
-.custom-colors:hover {
-  background-color: var(--accent) !important;
-  box-shadow: 0 0 10px #f4f2ef, 0 0 20px #f4f2ef;
-  transform: scale(1.02);
-  border: #f4f2ef !important;
-}
 .app-container {
   display: flex;
   flex-direction: column;
@@ -174,5 +170,19 @@ const handleDeleteList = (listId) => {
 .completed {
   text-decoration: line-through;
   opacity: 0.7;
+}
+
+.custom-colors {
+  background-color: var(--accent) !important;
+  border: none;
+  color: #fbfbfe !important;
+  transition: all 0.3s ease-in-out;
+}
+
+.custom-colors:hover {
+  background-color: var(--accent) !important;
+  box-shadow: 0 0 10px #f4f2ef, 0 0 20px #f4f2ef;
+  transform: scale(1.02);
+  border: #f4f2ef !important;
 }
 </style>

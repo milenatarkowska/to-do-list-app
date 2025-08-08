@@ -31,7 +31,7 @@
           icon="pi pi-arrow-right"
           class="custom-colors"
           @click="visible = true"
-          :label="activeListName"
+          :label="props.activeListName"
         />
 
         <Dialog
@@ -98,11 +98,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, defineEmits } from "vue";
+import { ref, onMounted, defineProps, defineEmits } from "vue";
 import Button from 'primevue/button';
 import Drawer from 'primevue/drawer';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
+
+const props = defineProps({
+  activeListName: {
+    type: String,
+    default: 'Select list'
+  }
+});
 
 const emit = defineEmits(['add-list', 'select-list', 'delete-list']);
 
@@ -116,14 +123,23 @@ const listToDelete = ref(null);
 onMounted(() => {
   const savedLists = localStorage.getItem("toDoLists");
   if (savedLists) {
-    lists.value = JSON.parse(savedLists);
+    try {
+      lists.value = JSON.parse(savedLists);
+    } catch (e) {
+      console.error('Error parsing saved lists', e);
+      createDefaultList();
+    }
   } else {
-    const defaultList = { id: Date.now(), name: 'Main List' };
-    lists.value = [defaultList];
-    saveLists();
-    emit('select-list', defaultList.id);
+    createDefaultList();
   }
 });
+
+function createDefaultList() {
+  const defaultList = { id: Date.now(), name: 'Main List', tasks: [] };
+  lists.value = [defaultList];
+  saveLists();
+  emit('select-list', defaultList.id);
+}
 
 const showDialog = () => {
   newListName.value = "";
@@ -135,7 +151,8 @@ const addNewList = () => {
 
   const newList = {
     id: Date.now(),
-    name: newListName.value.trim()
+    name: newListName.value.trim(),
+    tasks: []
   };
 
   lists.value.push(newList);
@@ -171,7 +188,12 @@ const deleteList = () => {
 };
 
 const saveLists = () => {
-  localStorage.setItem('toDoLists', JSON.stringify(lists.value));
+  const listsToSave = lists.value.map(list => ({
+    id: list.id,
+    name: list.name,
+    tasks: list.tasks || []
+  }));
+  localStorage.setItem('toDoLists', JSON.stringify(listsToSave));
 };
 </script>
 
