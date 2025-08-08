@@ -8,9 +8,15 @@
               v-for="list in lists"
               :key="list.id"
               class="list-item"
-              @click="selectList(list.id)"
             >
-              {{ list.name }}
+              <div class="list-item-content" @click="selectList(list.id)">
+                {{ list.name }}
+              </div>
+              <Button
+                icon="pi pi-trash"
+                class="p-button-text p-button-danger"
+                @click="confirmDeleteList(list)"
+              />
             </div>
           </div>
           <hr>
@@ -59,6 +65,33 @@
             />
           </template>
         </Dialog>
+
+        <Dialog
+          v-model:visible="deleteDialogVisible"
+          header="Confirm Deletion"
+          :modal="true"
+          :style="{ width: '350px' }"
+        >
+          <div class="confirmation-content">
+            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+            <span>Are you sure you want to delete this list?</span>
+          </div>
+          <template #footer>
+            <Button
+              label="No"
+              icon="pi pi-times"
+              @click="deleteDialogVisible = false"
+              class="p-button-text"
+            />
+            <Button
+              label="Yes"
+              icon="pi pi-check"
+              @click="deleteList"
+              class="p-button-danger"
+              autofocus
+            />
+          </template>
+        </Dialog>
       </div>
     </div>
   </div>
@@ -71,14 +104,14 @@ import Drawer from 'primevue/drawer';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 
-
-
-const emit = defineEmits(['add-list', 'select-list']);
+const emit = defineEmits(['add-list', 'select-list', 'delete-list']);
 
 const visible = ref(false);
 const displayDialog = ref(false);
+const deleteDialogVisible = ref(false);
 const lists = ref([]);
 const newListName = ref('');
+const listToDelete = ref(null);
 
 onMounted(() => {
   const savedLists = localStorage.getItem("toDoLists");
@@ -109,12 +142,32 @@ const addNewList = () => {
   saveLists();
   displayDialog.value = false;
   visible.value = false;
+  emit('add-list', newList);
   emit('select-list', newList.id);
 };
 
 const selectList = (listId) => {
   emit('select-list', listId);
   visible.value = false;
+};
+
+const confirmDeleteList = (list) => {
+  listToDelete.value = list;
+  deleteDialogVisible.value = true;
+};
+
+const deleteList = () => {
+  if (!listToDelete.value) return;
+
+  const index = lists.value.findIndex(list => list.id === listToDelete.value.id);
+  if (index !== -1) {
+    lists.value.splice(index, 1);
+    saveLists();
+    emit('delete-list', listToDelete.value.id);
+  }
+
+  deleteDialogVisible.value = false;
+  listToDelete.value = null;
 };
 
 const saveLists = () => {
@@ -153,12 +206,19 @@ const saveLists = () => {
 }
 
 .list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 0.75rem;
   margin: 0.25rem 0;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
-  cursor: pointer;
   transition: background 0.2s;
+}
+
+.list-item-content {
+  flex-grow: 1;
+  cursor: pointer;
 }
 
 .list-item:hover {
@@ -171,5 +231,11 @@ const saveLists = () => {
 
 .dialog-input {
   width: 100%;
+}
+
+.confirmation-content {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
 }
 </style>

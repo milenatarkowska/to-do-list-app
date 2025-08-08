@@ -1,12 +1,13 @@
 <template>
   <div class="app-container">
-    <header-comp
-      :active-list-name="activeList?.name || 'Select list'"
-      @add-list="handleAddList"
-      @select-list="setActiveList"
-    />
-
-    <div class="to-do-container" v-if="activeList">
+    <div class="app-container">
+      <header-comp
+        :active-list-name="activeList?.name || 'Select list'"
+        @add-list="handleAddList"
+        @select-list="setActiveList"
+        @delete-list="handleDeleteList"
+      />
+      <div class="to-do-container" v-if="activeList">
       <h2><b>{{ activeList.name }}</b></h2>
       <div class="add-task">
         <InputText
@@ -35,6 +36,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -102,6 +104,18 @@ const removeTask = (index) => {
 
 const saveLists = () => {
   localStorage.setItem('toDoLists', JSON.stringify(lists.value));
+};
+
+const handleDeleteList = (listId) => {
+  const index = lists.value.findIndex(list => list.id === listId);
+  if (index !== -1) {
+    lists.value.splice(index, 1);
+    saveLists();
+
+    if (activeListId.value === listId) {
+      activeListId.value = lists.value.length > 0 ? lists.value[0].id : null;
+    }
+  }
 };
 </script>
 
